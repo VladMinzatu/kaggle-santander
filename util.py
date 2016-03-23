@@ -12,9 +12,9 @@ def prepare_train_X_y():
     train = prepare_dataset('data/train.csv')
     y = train.TARGET.values
     X = train.drop(["ID", "TARGET"], axis=1).values
-    return (X,y)
+    return X,y
 
 def prepare_test_X():
     test = prepare_dataset('data/test.csv')
     X = test.drop(["ID"], axis=1).values
-    return X
+    return test.ID.astype(int), X
