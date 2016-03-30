@@ -1,20 +1,29 @@
 import pandas as pd
 import numpy as np
 
-def prepare_dataset(data_file):
-    data = pd.read_csv(data_file)
-    int_columns = data.select_dtypes(include=['int64']).columns
-    data[int_columns] = data[int_columns].astype(float)
-    data.replace(-999999.0, 0.0, inplace=True)
-    return data
+def prepare_data():
+    train = pd.read_csv('data/train.csv')
+    test = pd.read_csv('data/test.csv')
+    
+    # Treat ints as floats
+    train_int_columns = train.select_dtypes(include=['int64']).columns
+    train[train_int_columns] = train[train_int_columns].astype(float)
+    test_int_columns = test.select_dtypes(include=['int64']).columns
+    test[test_int_columns] = test[test_int_columns].astype(float)
 
-def prepare_train_X_y():
-    train = prepare_dataset('data/train.csv')
-    y = train.TARGET.values
-    X = train.drop(["ID", "TARGET"], axis=1).values
-    return X,y
+    # Replace large negative number with 0
+    train.replace(-999999.0, 0.0, inplace=True)
+    test.replace(-999999.0, 0.0, inplace=True)
+    
+    # Remove columns that are constant in train.csv
+    const_columns = train.loc[:, (train == train.ix[0]).all()].columns 
+    train = train.drop(const_columns, axis=1)
+    test = test.drop(const_columns, axis=1)
 
-def prepare_test_X():
-    test = prepare_dataset('data/test.csv')
-    X = test.drop(["ID"], axis=1).values
-    return test.ID.astype(int), X
+    # Compute vectors/matrices
+    X_train = train.drop(["ID", "TARGET"], axis=1).values
+    y_train = train.TARGET.values
+    X_test = test.drop(["ID"], axis=1).values
+    test_ids = test.ID.astype(int)
+    return X_train, y_train, X_test, test_ids
+
